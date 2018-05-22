@@ -29,6 +29,8 @@ import org.apache.cordova.PluginResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.widget.Toast;
+
 public class VideoPlayer extends CordovaPlugin implements OnCompletionListener, OnPreparedListener, OnErrorListener, OnDismissListener {
 
     protected static final String LOG_TAG = "VideoPlayer";
@@ -75,6 +77,7 @@ public class VideoPlayer extends CordovaPlugin implements OnCompletionListener, 
             cordova.getActivity().runOnUiThread(new Runnable() {
                 public void run() {
                     openVideoDialog(path, options);
+                    Toast.makeText(cordova.getActivity(), "openVideoDialog", Toast.LENGTH_LONG).show();
                 }
             });
 
@@ -142,6 +145,25 @@ public class VideoPlayer extends CordovaPlugin implements OnCompletionListener, 
         videoView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         // videoView.setVideoURI(uri);
         // videoView.setVideoPath(path);
+        videoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (dialog != null) {
+                    if(player.isPlaying()) {
+                        player.stop();
+                    }
+                    player.release();
+                    dialog.dismiss();
+                }
+
+                if (callbackContext != null) {
+                    PluginResult result = new PluginResult(PluginResult.Status.OK);
+                    result.setKeepCallback(false); // release status callback in JS side
+                    callbackContext.sendPluginResult(result);
+                    callbackContext = null;
+                }
+            }
+        });
         main.addView(videoView);
 
         player = new MediaPlayer();
